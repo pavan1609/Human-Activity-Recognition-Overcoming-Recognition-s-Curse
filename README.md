@@ -3,6 +3,8 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2304.05088-b31b1b.svg)](https://arxiv.org/abs/2304.05088)
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+[![GitHub forks](https://img.shields.io/github/stars/mariusbock/wear?style=social)](https://github.com/mariusbock/wear)
+[![GitHub forks](https://img.shields.io/github/forks/mariusbock/wear?style=social)](https://github.com/mariusbock/wear/fork)
 ## Credits
 
 - **Author**: Marius Bock
