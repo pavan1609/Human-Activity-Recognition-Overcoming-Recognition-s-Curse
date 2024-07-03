@@ -2,7 +2,7 @@
 
 <img loop src="teaser.gif" width="100%"/>
 
-##Credits
+## Credits
 
 **Author -  Marius Bock
 **Source code - https://github.com/mariusbock/wear
