@@ -1,6 +1,7 @@
 # Human Activity Recognition: Overcoming-the-curse-of-recognition-in-the-wild
 
 <img loop src="teaser.gif" width="100%"/>
+
 credits -  Marius Bock
 source code - https://github.com/mariusbock/wear
 
