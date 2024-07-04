@@ -8,10 +8,6 @@ import argparse
 import os
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
 
-# Import necessary functions from your professor's utils
-from data_utils import convert_samples_to_segments
-from os_utils import mkdir_if_missing
-
 class SimpleDetectionEvaluator:
     def __init__(self, tiou_thresholds):
         self.tiou_thresholds = tiou_thresholds
