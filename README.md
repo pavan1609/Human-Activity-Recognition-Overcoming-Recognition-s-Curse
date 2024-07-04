@@ -9,9 +9,11 @@
 This repository contains an implementation of a Time Convolutional Network (TCN) model for analyzing inertial data, enhanced with Dynamic Time Warping (DTW) for segmentation and Dynamic Time Warping Barycenter Averaging (DBA) for data augmentation. This approach is designed for tasks such as human activity recognition, leveraging advanced time series techniques to improve model performance and robustness.
 
 **Overview**
+
 Inertial data analysis is critical in various domains, including healthcare, sports, and human-computer interaction. The combination of TCN, DTW segmentation, and DBA augmentation offers a powerful solution for time-series classification problems. TCNs efficiently capture temporal patterns in the data, while DTW segmentation ensures that activities are accurately segmented, and DBA augmentation enhances the training dataset by creating more representative samples.
 
 **Features**
+
 DTW Segmentation: The model processes inertial data using Dynamic Time Warping for segmentation, ensuring accurate alignment of time-series data points and better capturing the dynamics of activities.
 DBA Augmentation: Dynamic Time Warping Barycenter Averaging is used to augment the dataset, creating more representative samples and improving model generalization.
 TCN Architecture: The Temporal Convolutional Network (TCN) is used for its ability to model long-range dependencies in time-series data, making it ideal for activity recognition tasks.
