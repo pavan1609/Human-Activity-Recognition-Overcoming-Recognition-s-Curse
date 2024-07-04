@@ -15,10 +15,15 @@ Inertial data analysis is critical in various domains, including healthcare, spo
 **Features**
 
 DTW Segmentation: The model processes inertial data using Dynamic Time Warping for segmentation, ensuring accurate alignment of time-series data points and better capturing the dynamics of activities.
+
 DBA Augmentation: Dynamic Time Warping Barycenter Averaging is used to augment the dataset, creating more representative samples and improving model generalization.
+
 TCN Architecture: The Temporal Convolutional Network (TCN) is used for its ability to model long-range dependencies in time-series data, making it ideal for activity recognition tasks.
+
 Customizable Parameters: Users can adjust various parameters, including window size and overlap percentage for segmentation, to fine-tune the data preprocessing and model training steps.
+
 Reproducibility: The repository includes utilities for setting random seeds, ensuring that results are reproducible across different runs and environments.
+
 Training and Evaluation: The training script supports checkpoints, tensorboard logging, and configurable hyperparameters, facilitating robust model training and evaluation.
 
 ## Repository Structure
