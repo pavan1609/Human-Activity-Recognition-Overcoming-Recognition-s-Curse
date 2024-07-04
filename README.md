@@ -30,19 +30,33 @@ Training and Evaluation: The training script supports checkpoints, tensorboard l
     
 ## Getting Started
 Prerequisites
+
 Python 3.6 or higher
+
 PyTorch
+
 Numpy
+
 Pandas
+
 dba
+
 distances
+
 joblib
+
 tqdm
+
 numba
+
 sklearn
+
 fastdtw
+
 seaborn
+
 argparse
+
 
 ## Download
 The full dataset can be downloaded [here](https://bit.ly/wear_dataset)
