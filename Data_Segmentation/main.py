@@ -4,14 +4,6 @@ import numpy as np
 import pandas as pd
 from Data_loading import load_data
 from dtw_segmentations import dtw_distance, dtw_segmentation, segment_data
-from verification import (
-    plot_segments,
-    check_segment_lengths,
-    statistical_analysis,
-    manual_inspection,
-    check_outliers,
-    check_transition_points
-)
 
 if __name__ == "__main__":
     data_folder = r'D:\PAVAN\WEAR\wearchallenge_hasca2024\wearchallenge_hasca2024'
@@ -27,8 +19,8 @@ if __name__ == "__main__":
     print("Timestamps successfully added to the data.")
 
     # Adjusted parameters
-    window_size = 10  # You can change this to test different window sizes
-    threshold = 5.0  # You can change this to test different thresholds
+    window_size = 5  # You can change this to test different window sizes
+    threshold = 2.0  # You can change this to test different thresholds
 
     print(f"Running segmentation with window size: {window_size} and threshold: {threshold}")
 
@@ -54,6 +46,16 @@ if __name__ == "__main__":
     np.save(os.path.join(save_folder, 'segmented_labels.npy'), segmented_labels)
 
     print(f"Segmented data saved to {save_folder}")
+
+    # Delay the import of verification until segmented data is saved
+    from verification import (
+        plot_segments,
+        check_segment_lengths,
+        statistical_analysis,
+        manual_inspection,
+        check_outliers,
+        check_transition_points
+    )
 
     # Verification
     plot_segments(segmented_data, segmented_labels, n=5)
