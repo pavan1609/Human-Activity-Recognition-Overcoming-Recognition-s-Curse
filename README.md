@@ -21,9 +21,32 @@ Customizable Parameters: Users can adjust various parameters, including window s
 Reproducibility: The repository includes utilities for setting random seeds, ensuring that results are reproducible across different runs and environments.
 Training and Evaluation: The training script supports checkpoints, tensorboard logging, and configurable hyperparameters, facilitating robust model training and evaluation.
 
+## Repository Structure
+
+- **tcn.py:** Contains the definition of the TCN model architecture.
+- **train.py:** Script for training the TCN model. It includes argument parsing for different hyperparameters and handles the training loop.
+- **dtw.py:** Contains the algorithm to compute the euclidian distance by considering 2 dynamic time series values within threshold.
+- **dba.py:** Algorithm which creates synthetic data to the segmented data, by averaging each features explicitly.
+    
+## Getting Started
+Prerequisites
+Python 3.6 or higher
+PyTorch
+Numpy
+Pandas
+dba
+distances
+joblib
+tqdm
+numba
+sklearn
+fastdtw
+seaborn
+argparse
 
 ## Download
 The full dataset can be downloaded [here](https://bit.ly/wear_dataset)
+- **Dataset by**: Marius Bock
 
 The download folder is divided into 3 subdirectories
 - **annotations (> 1MB)**: JSON-files containing annotations per-subject using the THUMOS14-style
