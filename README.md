@@ -29,7 +29,7 @@ Training and Evaluation: The training script supports checkpoints, tensorboard l
 - **dba.py:** Algorithm which creates synthetic data to the segmented data, by averaging each features explicitly.
     
 ## Getting Started
-Prerequisites
+**Prerequisites**
 
 Python 3.6 or higher
 
