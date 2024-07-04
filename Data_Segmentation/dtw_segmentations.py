@@ -6,6 +6,7 @@ def dtw_distance(ts_a, ts_b):
     ts_a = np.atleast_2d(ts_a)
     ts_b = np.atleast_2d(ts_b)
     dist, _ = fastdtw(ts_a, ts_b, dist=lambda x, y: np.linalg.norm(x - y))
+    print(f"Computed DTW distance: {dist}")
     return dist
 
 def dtw_segmentation(data, window_size, threshold):
@@ -27,6 +28,7 @@ def dtw_segmentation(data, window_size, threshold):
             start_idx = end_idx
         else:
             start_idx += window_size
+        print(f"Current segments: {segments}")
     return segments
 
 def segment_data(data, window_size, threshold):
@@ -39,4 +41,5 @@ def segment_data(data, window_size, threshold):
         segmented_data.append(segment[:, :-2])  # Exclude the last two columns
         subject_ids.append(segment[0, -2])
         labels.append(segment[0, -1])
-    return subject_ids, segmented_data, labels
+    print(f"Number of segments created: {len(segments)}")
+    return subject_ids, segmented_data, labels  # Return lists instead of arrays
