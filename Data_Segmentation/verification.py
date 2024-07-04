@@ -5,9 +5,16 @@ import seaborn as sns
 import os
 
 # Ensure output directory exists
-output_dir = 'D:\\PAVAN\\WEAR\\output'
+output_dir = 'D:\\PAVAN\\WEAR\\verify'
 os.makedirs(output_dir, exist_ok=True)
 
+# Load the segmented data and labels
+segmented_data = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_data.npy')
+segmented_labels = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_labels.npy')
+
+# Verify the shape of the loaded data
+print("Segmented Data Shape:", segmented_data.shape)
+print("Segmented Labels Shape:", segmented_labels.shape)
 # Function to handle FutureWarning by replacing and inferring objects
 def read_and_replace(file_path, label_dict):
     data = pd.read_csv(file_path)
