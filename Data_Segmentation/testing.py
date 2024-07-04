@@ -1,10 +1,13 @@
 import numpy as np
-import random
-import collections
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
 
-# Simulate the segmented_data and segmented_labels
-# segmented_data = ...  # Your segmented data here
-# segmented_labels = ...  # Your segmented labels here
+# Ensure output directory exists
+output_dir = 'D:\\PAVAN\\WEAR\\output'
+os.makedirs(output_dir, exist_ok=True)
+
 # Load the segmented data and labels
 segmented_data = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_data.npy')
 segmented_labels = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_labels.npy')
@@ -13,55 +16,98 @@ segmented_labels = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\se
 print("Segmented Data Shape:", segmented_data.shape)
 print("Segmented Labels Shape:", segmented_labels.shape)
 
-# Check for NaNs or Infs in the segmented data
-nan_infs = np.isnan(segmented_data).sum() + np.isinf(segmented_data).sum()
-if nan_infs > 0:
-    print(f"Found {nan_infs} NaNs or Infs in the segmented data.")
-else:
-    print("No NaNs or Infs found in the segmented data.")
+# Plot segments function
+def plot_segments(output_x, output_y, n=5):
+    for i in range(n):
+        plt.figure(figsize=(12, 6))
+        for j in range(output_x[i].shape[1]):
+            plt.plot(output_x[i][:, j], label=f'Feature {j+1}')
+        plt.title(f"Segment {i} - Label: {output_y[i]}")
+        plt.xlabel('Time')
+        plt.ylabel('Feature Value')
+        plt.legend()
+        plt.savefig(f'{output_dir}/segment_{i}.png')
+        plt.close()
 
-# Print the distribution of the labels
-label_distribution = collections.Counter(segmented_labels)
-print("Label Distribution:", label_distribution)
+# Check segment lengths function
+def check_segment_lengths(output_x, window_size):
+    segment_lengths = [len(segment) for segment in output_x]
+    unique_lengths = np.unique(segment_lengths)
+    print(f"Unique segment lengths: {unique_lengths}")
+    inconsistent_lengths = [length for length in segment_lengths if length != window_size]
+    print(f"Number of segments with inconsistent lengths: {len(inconsistent_lengths)}")
+    
+    plt.figure(figsize=(10, 5))
+    plt.hist(segment_lengths, bins=range(min(segment_lengths), max(segment_lengths) + 1))
+    plt.title('Histogram of Segment Lengths')
+    plt.xlabel('Segment Length')
+    plt.ylabel('Frequency')
+    plt.savefig(f'{output_dir}/segment_lengths_histogram.png')
+    plt.close()
 
-# Print a few random segments for visual inspection
-random_indices = random.sample(range(len(segmented_data)), 5)
-for idx in random_indices:
-    print(f"Segment {idx} - Label: {segmented_labels[idx]}")
-    print("Data:")
-    print(segmented_data[idx])
-    print()
+# Statistical analysis function
+def statistical_analysis(output_x):
+    for i, segment in enumerate(output_x[:5]):
+        mean = np.mean(segment, axis=0)
+        variance = np.var(segment, axis=0)
+        print(f"Segment {i} - Mean: {mean}, Variance: {variance}")
+        plt.figure(figsize=(12, 6))
+        sns.boxplot(data=segment)
+        plt.title(f'Segment {i} - Boxplot of Features')
+        plt.xlabel('Features')
+        plt.ylabel('Value')
+        plt.savefig(f'{output_dir}/boxplot_segment_{i}.png')
+        plt.close()
 
-# Check temporal consistency within each segment
-temporal_inconsistencies = 0
-for i, segment in enumerate(segmented_data):
-    if not np.all(np.diff(segment[:, 0]) > 0):
-        temporal_inconsistencies += 1
+# Manual inspection function
+def manual_inspection(output_x, output_y, start_idx=0, end_idx=10):
+    for i in range(start_idx, end_idx):
+        print(f"Segment {i} - Label: {output_y[i]}")
+        print("Data:")
+        print(output_x[i])
+        plt.figure(figsize=(12, 6))
+        for j in range(output_x[i].shape[1]):
+            plt.plot(output_x[i][:, j], label=f'Feature {j+1}')
+        plt.title(f"Segment {i} - Label: {output_y[i]}")
+        plt.xlabel('Time')
+        plt.ylabel('Feature Value')
+        plt.legend()
+        plt.savefig(f'{output_dir}/manual_inspection_segment_{i}.png')
+        plt.close()
 
-print(f"Number of segments with temporal inconsistencies: {temporal_inconsistencies}")
+# Check outliers function
+def check_outliers(output_x):
+    for i, segment in enumerate(output_x[:5]):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            mean = np.mean(segment, axis=0)
+            std_dev = np.std(segment, axis=0)
+            z_scores = np.abs((segment - mean) / std_dev)
+            z_scores[np.isnan(z_scores)] = 0  # Set NaN values to 0
+            outliers = np.where(z_scores > 3)
+            print(f"Segment {i} - Outliers found at positions: {outliers}")
 
-# Function to check for temporal inconsistencies
-def check_temporal_inconsistencies(data):
-    num_segments_with_inconsistencies = 0
-    inconsistent_segments = []
+# Check transition points function
+def check_transition_points(output_x, output_y):
+    transitions = np.where(np.diff(output_y) != 0)[0]
+    print(f"Transition points: {transitions}")
+    for idx in transitions[:5]:
+        print(f"Transition at segment {idx} from {output_y[idx]} to {output_y[idx + 1]}")
+        plt.figure(figsize=(12, 6))
+        for j in range(output_x[idx].shape[1]):
+            plt.plot(output_x[idx][:, j], label=f'Feature {j+1}')
+        plt.title(f"Segment {idx} - Label: {output_y[idx]}")
+        plt.xlabel('Time')
+        plt.ylabel('Feature Value')
+        plt.legend()
+        plt.savefig(f'{output_dir}/transition_segment_{idx}.png')
+        plt.close()
 
-    for i, segment in enumerate(data):
-        timestamps = segment[:, 0]
-        if not np.all(np.diff(timestamps) > 0):  # Check if timestamps are not strictly increasing
-            num_segments_with_inconsistencies += 1
-            inconsistent_segments.append(i)
-
-    return num_segments_with_inconsistencies, inconsistent_segments
-
-# Load your data
-# Assuming segmented_data and segmented_labels are already loaded as per your provided shapes
-
-# Perform the temporal inconsistency check
-num_inconsistent_segments, inconsistent_segments = check_temporal_inconsistencies(segmented_data)
-
-print(f"Number of segments with temporal inconsistencies: {num_inconsistent_segments}")
-
-# Debug: Print out some examples of inconsistent segments
-for i in inconsistent_segments[:5]:  # Print first 5 examples
-    print(f"Segment {i} with label {segmented_labels[i]}:")
-    print(segmented_data[i])
+        plt.figure(figsize=(12, 6))
+        for j in range(output_x[idx + 1].shape[1]):
+            plt.plot(output_x[idx + 1][:, j], label=f'Feature {j+1}')
+        plt.title(f"Segment {idx + 1} - Label: {output_y[idx + 1]}")
+        plt.xlabel('Time')
+        plt.ylabel('Feature Value')
+        plt.legend()
+        plt.savefig(f'{output_dir}/transition_segment_{idx + 1}.png')
+        plt.close()
