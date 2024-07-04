@@ -2,9 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 
-# Define the folder path where your CSV files are located
-data_folder = r'D:\PAVAN\WEAR\wearchallenge_hasca2024\wearchallenge_hasca2024'
-
 # Define the label dictionary for replacing labels with numeric codes
 label_dict = {
     'null': 0,
@@ -28,31 +25,31 @@ label_dict = {
     'bench-dips': 18
 }
 
-# Function to add synthetic timestamps
-def add_timestamps(data, sampling_rate=50):
-    num_samples = len(data)
-    timestamps = np.arange(0, num_samples / sampling_rate, 1 / sampling_rate)
-    return np.column_stack((timestamps, data))
-
-# Function to load data from a CSV file
-def load_data_from_file(file_path, sampling_rate=50):
-    data = pd.read_csv(file_path).replace({"label": label_dict}).fillna(0).to_numpy()
-    return add_timestamps(data, sampling_rate)
-
-# Load data from all CSV files in the folder and store each file's data separately
-def load_all_data(data_folder, sampling_rate=50):
+# Function to load data from all CSV files in the specified folder
+def load_and_preprocess_data(data_folder):
     all_data = []
+    sampling_rate = 50  # 50 Hz, adjust as necessary
+    time_interval = 1 / sampling_rate
+
+    pd.set_option('future.no_silent_downcasting', True)
+
     for i in range(18):  # Assuming files are named sbj_0.csv to sbj_17.csv
         filename = f'sbj_{i}.csv'
         file_path = os.path.join(data_folder, filename)
         if os.path.exists(file_path):
-            data_with_timestamps = load_data_from_file(file_path, sampling_rate)
-            all_data.append(data_with_timestamps)
+            data = pd.read_csv(file_path)
+            data = data.replace({"label": label_dict}).fillna(0)
+            num_samples = data.shape[0]
+            timestamps = np.arange(num_samples) * time_interval
+            data.insert(0, 'timestamp', timestamps)  # Add synthetic timestamps
+            all_data.append(data)
         else:
             print(f"Warning: File {file_path} not found.")
-    return all_data
+    
+    concatenated_data = pd.concat(all_data, ignore_index=True)
+    concatenated_data.to_csv('processed_data.csv', index=False)  # Save the processed data to a CSV file
+    return concatenated_data.to_numpy()
 
 # Load data from all CSV files in the folder
-all_data = load_all_data(data_folder)
-for i, data in enumerate(all_data):
-    print(f"Shape of data for file sbj_{i}.csv: {data.shape}")
+def load_data(data_folder):
+    return load_and_preprocess_data(data_folder)
