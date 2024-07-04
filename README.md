@@ -6,7 +6,19 @@
 - **Source Code**: https://github.com/mariusbock/wear
   
 ## Abstract
-Though research has shown the complementarity of camera- and inertial-based data, datasets which offer both modalities remain scarce. In this paper, we introduce WEAR, an outdoor sports dataset for both vision- and inertial-based human activity recognition (HAR). The dataset comprises data from 18 participants performing a total of 18 different workout activities with untrimmed inertial (acceleration) and camera (egocentric video) data recorded at 10 different outside locations. Unlike previous egocentric datasets, WEAR provides a challenging prediction scenario marked by purposely introduced activity variations as well as an overall small information overlap across modalities. Provided benchmark results reveal that single-modality architectures each have different strengths and weaknesses in their prediction performance. Further, in light of the recent success of transformer-based temporal action localization models, we demonstrate their versatility by applying them in a plain fashion using vision, inertial and combined (vision + inertial) features as input. Results demonstrate both the applicability of vision-based transformers for inertial data and fusing both modalities by means of simple concatenation, with the combined approach (vision + inertial features) being able to produce the highest mean average precision and close-to-best F1-score.
+This repository contains an implementation of a Time Convolutional Network (TCN) model for analyzing inertial data, enhanced with Dynamic Time Warping (DTW) for segmentation and Dynamic Time Warping Barycenter Averaging (DBA) for data augmentation. This approach is designed for tasks such as human activity recognition, leveraging advanced time series techniques to improve model performance and robustness.
+
+**Overview**
+Inertial data analysis is critical in various domains, including healthcare, sports, and human-computer interaction. The combination of TCN, DTW segmentation, and DBA augmentation offers a powerful solution for time-series classification problems. TCNs efficiently capture temporal patterns in the data, while DTW segmentation ensures that activities are accurately segmented, and DBA augmentation enhances the training dataset by creating more representative samples.
+
+**Features**
+DTW Segmentation: The model processes inertial data using Dynamic Time Warping for segmentation, ensuring accurate alignment of time-series data points and better capturing the dynamics of activities.
+DBA Augmentation: Dynamic Time Warping Barycenter Averaging is used to augment the dataset, creating more representative samples and improving model generalization.
+TCN Architecture: The Temporal Convolutional Network (TCN) is used for its ability to model long-range dependencies in time-series data, making it ideal for activity recognition tasks.
+Customizable Parameters: Users can adjust various parameters, including window size and overlap percentage for segmentation, to fine-tune the data preprocessing and model training steps.
+Reproducibility: The repository includes utilities for setting random seeds, ensuring that results are reproducible across different runs and environments.
+Training and Evaluation: The training script supports checkpoints, tensorboard logging, and configurable hyperparameters, facilitating robust model training and evaluation.
+
 
 ## Download
 The full dataset can be downloaded [here](https://bit.ly/wear_dataset)
