@@ -8,13 +8,24 @@ import os
 output_dir = 'D:\\PAVAN\\WEAR\\verify'
 os.makedirs(output_dir, exist_ok=True)
 
+def load_segmented_data():
+    data_path = 'D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_data.npy'
+    labels_path = 'D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_labels.npy'
+    
+    if os.path.exists(data_path) and os.path.exists(labels_path):
+        segmented_data = np.load(data_path)
+        segmented_labels = np.load(labels_path)
+        return segmented_data, segmented_labels
+    else:
+        raise FileNotFoundError("Segmented data files not found. Please ensure the segmentation process has completed successfully.")
+
 # Load the segmented data and labels
-segmented_data = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_data.npy')
-segmented_labels = np.load('D:\\PAVAN\\WEAR\\wearchallenge_hasca2024\\output\\segmented_labels.npy')
+segmented_data, segmented_labels = load_segmented_data()
 
 # Verify the shape of the loaded data
 print("Segmented Data Shape:", segmented_data.shape)
 print("Segmented Labels Shape:", segmented_labels.shape)
+
 # Function to handle FutureWarning by replacing and inferring objects
 def read_and_replace(file_path, label_dict):
     data = pd.read_csv(file_path)
