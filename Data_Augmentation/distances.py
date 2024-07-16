@@ -19,4 +19,4 @@ def dynamic_time_warping(x, y):
             min_cost = min(cost[i-1, j], cost[i, j-1], cost[i-1, j-1])
             cost[i, j] = np.linalg.norm(x[i] - y[j]) + min_cost
 
-    return cost[-1, -1], (n, m)  # Returning path size as a placeholder, modify as needed
+    return cost[-1, -1]  # Return only the distance
