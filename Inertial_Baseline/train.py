@@ -4,27 +4,19 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from tcn import TemporalConvNet
 import numpy as np
+import pandas as pd
 import argparse
 import os
-from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
-
-class SimpleDetectionEvaluator:
-    def __init__(self, tiou_thresholds):
-        self.tiou_thresholds = tiou_thresholds
-
-    def evaluate(self, pred_segments):
-        # Implement a simple evaluation metric here
-        # For now, let's just return random values as a placeholder
-        mAP = np.random.rand(len(self.tiou_thresholds))
-        mRecall = np.random.rand(len(self.tiou_thresholds))
-        return mAP, mRecall
+import matplotlib.pyplot as plt
+from evaluation import InertialActivityDetectionEvaluator
+from data_utils import convert_samples_to_segments
+from os_utils import mkdir_if_missing
 
 def load_data(data_path):
     X = np.load(os.path.join(data_path, 'segmented_data.npy'))
     y = np.load(os.path.join(data_path, 'segmented_labels.npy'))
     subject_ids = np.load(os.path.join(data_path, 'subject_ids.npy'))
     
-    # Split data into training and testing based on subjects
     unique_subjects = np.unique(subject_ids)
     train_subjects = unique_subjects[:int(0.8 * len(unique_subjects))]
     test_subjects = unique_subjects[int(0.8 * len(unique_subjects)):]
@@ -36,7 +28,6 @@ def load_data(data_path):
     X_test, y_test = X[test_indices], y[test_indices]
     test_subject_ids = subject_ids[test_indices]
 
-    # Convert to PyTorch tensors
     X_train = torch.tensor(X_train, dtype=torch.float32)
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_train = torch.tensor(y_train, dtype=torch.long)
@@ -47,7 +38,6 @@ def load_data(data_path):
 def train_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     total_loss = 0
-    all_preds, all_targets = [], []
     for inputs, targets in dataloader:
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
@@ -56,12 +46,7 @@ def train_epoch(model, dataloader, criterion, optimizer, device):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-        
-        preds = outputs.argmax(dim=1).cpu().numpy()
-        all_preds.extend(preds)
-        all_targets.extend(targets.cpu().numpy())
-    
-    return total_loss / len(dataloader), np.array(all_preds), np.array(all_targets)
+    return total_loss / len(dataloader)
 
 def evaluate_model(model, dataloader, criterion, device):
     model.eval()
@@ -79,6 +64,24 @@ def evaluate_model(model, dataloader, criterion, device):
             all_targets.extend(targets.cpu().numpy())
     
     return total_loss / len(dataloader), np.array(all_preds), np.array(all_targets)
+
+def prepare_dataframes(y, subject_ids, preds, scores, segment_duration=1.0):
+    ground_truth = pd.DataFrame({
+        't-start': np.arange(len(y)) * segment_duration,
+        't-end': (np.arange(len(y)) + 1) * segment_duration,
+        'label': y,
+        'subject_id': subject_ids
+    })
+    
+    predictions = pd.DataFrame({
+        't-start': np.arange(len(preds)) * segment_duration,
+        't-end': (np.arange(len(preds)) + 1) * segment_duration,
+        'label': preds,
+        'score': scores,
+        'subject_id': subject_ids
+    })
+    
+    return ground_truth, predictions
 
 def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -100,37 +103,52 @@ def main(args):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
-    # Initialize simple evaluator
-    det_eval = SimpleDetectionEvaluator(tiou_thresholds=args.tiou_thresholds)
+    # Prepare ground truth for evaluation
+    ground_truth, _ = prepare_dataframes(y_test, test_subject_ids, y_test, np.ones_like(y_test))
+    evaluator = InertialActivityDetectionEvaluator(ground_truth, tiou_thresholds=args.tiou_thresholds)
 
     for epoch in range(args.epochs):
-        train_loss, train_preds, train_targets = train_epoch(model, train_dataloader, criterion, optimizer, device)
+        train_loss = train_epoch(model, train_dataloader, criterion, optimizer, device)
         val_loss, val_preds, val_targets = evaluate_model(model, test_dataloader, criterion, device)
 
-        # Convert predictions to segments for mAP calculation
-        val_segments = convert_samples_to_segments(test_subject_ids, val_preds, args.sampling_rate)
+        with torch.no_grad():
+            val_loss, val_preds, val_targets = evaluate_model(model, test_dataloader, criterion, device)
+    
+            # Prepare predictions for evaluation
+            val_scores = model(X_test.to(device)).softmax(dim=1).max(dim=1)[0].cpu().numpy()
+            _, predictions = prepare_dataframes(val_targets, test_subject_ids, val_preds, val_scores)
 
-        # Calculate metrics
-        v_mAP, _ = det_eval.evaluate(val_segments)
-        conf_mat = confusion_matrix(val_targets, val_preds, normalize='true')
-        v_acc = conf_mat.diagonal()/conf_mat.sum(axis=1)
-        v_prec = precision_score(val_targets, val_preds, average=None, zero_division=1)
-        v_rec = recall_score(val_targets, val_preds, average=None, zero_division=1)
-        v_f1 = f1_score(val_targets, val_preds, average=None, zero_division=1)
+            # Evaluate
+            results = evaluator.evaluate(predictions)
 
         print(f'Epoch: [{epoch+1}/{args.epochs}]')
-        print(f'TRAINING: avg. loss {train_loss:.2f}')
-        print(f'VALIDATION: avg. loss {val_loss:.2f}')
-        print(f'Avg. mAP {np.nanmean(v_mAP) * 100:.2f} (%)')
-        for tiou, tiou_mAP in zip(args.tiou_thresholds, v_mAP):
-            print(f'mAP@{tiou} {tiou_mAP*100:.2f} (%)')
-        print(f'Acc {np.nanmean(v_acc) * 100:.2f} (%)')
-        print(f'Prec {np.nanmean(v_prec) * 100:.2f} (%)')
-        print(f'Rec {np.nanmean(v_rec) * 100:.2f} (%)')
-        print(f'F1 {np.nanmean(v_f1) * 100:.2f} (%)')
+        print(f'TRAINING: avg. loss {train_loss:.4f}')
+        print(f'VALIDATION: avg. loss {val_loss:.4f}')
+        evaluator.print_results(results)
+
+        if (epoch + 1) % 10 == 0:
+            evaluator.plot_confusion_matrix(results)
 
     # Save the final model
     torch.save(model.state_dict(), 'tcn_model_final.pth')
+
+    # Final evaluation plots
+    evaluator.plot_confusion_matrix(results)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(evaluator.tiou_thresholds, results['mAP'], marker='o')
+    plt.title('mAP vs tIoU Threshold')
+    plt.xlabel('tIoU Threshold')
+    plt.ylabel('mAP')
+    plt.grid(True)
+    plt.show()
+
+    print("\nPer-class Average Precision at different tIoU thresholds:")
+    for activity in evaluator.activity_index.keys():
+        if activity != 'mAP':
+            print(f"\n{activity}:")
+            for i, tiou in enumerate(evaluator.tiou_thresholds):
+                print(f"  AP @ tIoU={tiou:.2f}: {results[activity][i]:.4f}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
