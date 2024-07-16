@@ -5,7 +5,18 @@ from augment import augment_train_set
 from ensemble import Classifier_ENSEMBLE
 from knn import KNNClassifier
 from resnet import Classifier_RESNET
-from joblib import Parallel, delayed
+import os
+
+def load_augmented_data(save_dir='augmented_batches'):
+    syn_x_train = []
+    syn_y_train = []
+    for file in os.listdir(save_dir):
+        if file.startswith('augmented_x_class_'):
+            syn_x_train.append(np.load(os.path.join(save_dir, file)))
+        elif file.startswith('augmented_y_class_'):
+            syn_y_train.append(np.load(os.path.join(save_dir, file)))
+    
+    return np.concatenate(syn_x_train), np.concatenate(syn_y_train)
 
 def save_augmented_data(x_data, y_data, x_filename='augmented_x_train.npy', y_filename='augmented_y_train.npy'):
     np.save(x_filename, x_data)
@@ -31,7 +42,10 @@ if __name__ == "__main__":
     classes = np.unique(y_train)
     N = 50  # Number of synthetic samples per class
 
-    syn_x_train, syn_y_train = augment_train_set(x_train, y_train, classes, N)
+    augment_train_set(x_train, y_train, classes, N)
+
+    # Load augmented data
+    syn_x_train, syn_y_train = load_augmented_data()
 
     # Combine original and synthetic data
     x_train_combined = np.concatenate((x_train, syn_x_train), axis=0)
